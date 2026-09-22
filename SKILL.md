@@ -2,8 +2,8 @@
 name: storage-guidelines
 description: >
   Use when deciding where any file/directory the bot creates should live.
-  Covers the bot workspace rule (creates→/bot-workspace/, throwaway→/tmp/),
-  the keep zones (bot-workspace, bot-database, bot-skillcode, tmp), the skills
+  Covers the bot workspace rule (creates→/home/zombie/bot-workspace/, throwaway→/tmp/),
+  the keep zones (/home/zombie/bot-workspace/, /home/zombie/bot-database/, /home/zombie/bot-skillcode/, tmp), the skills
   storage locations (profile-local and shared/default), what belongs where, what
   never goes where, the bot-workspace layout, and a decision flow for every file
   the bot outputs. That keeps the machine clean, keeps keepsakes easy to back up,
@@ -15,7 +15,7 @@ description: >
 
 ## Rule of thumb
 
-- If it's worth keeping, it goes in `/bot-workspace/`.
+- If it's worth keeping, it goes in `/home/zombie/bot-workspace/`.
 - If it's disposable, one-shot, or won't matter after a reboot, it goes in `/tmp/`.
 - Bot-authored **work product** does not scatter into `/home/zombie/` outside those zones. Ever.
 
@@ -25,7 +25,7 @@ Everything below exists so a bot has a single, repeatable rule for every file it
 
 ## The keep zones
 
-### 1. Bot workspace — `/bot-workspace/`
+### 1. Bot workspace — `/home/zombie/bot-workspace/`
 
 **What it is:** the home for everything the bot creates that has value and should survive a reboot.
 
@@ -39,25 +39,25 @@ Everything below exists so a bot has a single, repeatable rule for every file it
 - throwaway temp files (those go to `/tmp/`)
 - the bot's own framework state (Hermes profile internals, systemd units, plugin dirs the platform owns — those live where the platform put them)
 
-**Current layout in use:**
+**Current layout in use:** (on this machine these live under `/home/zombie/`)
 ```
-/bot-workspace/
+/home/zombie/bot-workspace/
 ├── albums/                 # bot-authored project folders (e.g. test album output)
 ├── USER.md                 # bot-authored user profile / research notes
 ├── skills/                 # loadable skill folders installed here (for this profile only — until we install to shared default)
 │   └── image-gen/          # image-gen skill — still in progress, keep here while we work on it
 └── generated/              # output from image-generation and similar tools (artifacts)
 
-/bot-database/              # user database project — sibling of bot-workspace, NOT inside it
+/home/zombie/bot-database/              # user database project — sibling of bot-workspace, NOT inside it
 └── Bot-Database/
     └── database-plans.md
 
-/bot-skillcode/             # backend code for skill-driven tools we actually run (python scripts, repos)
+/home/zombie/bot-skillcode/             # backend code for skill-driven tools we actually run (python scripts, repos)
 ├── agent-backup-skill/     # Agent-Backup-Skill: backup.py + SKILL.md (the reusable skill doc + backing script)
 └── agent-backup-tool/      # Agent-Backup-Tool: restore.py (tkinter GUI + CLI fallback for gpg .env restore)
 ```
 
-Subfolders under `/bot-workspace/` should be created as the work requires. There is no fixed tree beyond what the work needs; the rule is just "kept things go here."
+Subfolders under `/home/zombie/bot-workspace/` should be created as the work requires. There is no fixed tree beyond what the work needs; the rule is just "kept things go here."
 
 ### 2. Temporary scratch — `/tmp/`
 
@@ -80,7 +80,7 @@ Subfolders under `/bot-workspace/` should be created as the work requires. There
 - anything that is itself a deliverable
 - anything that another step depends on after the current turn
 
-If there's doubt, assume keep and put it in `/bot-workspace/`. Only use `/tmp/` when the bot is confident the file is disposable.
+If there's doubt, assume keep and put it in `/home/zombie/bot-workspace/`. Only use `/tmp/` when the bot is confident the file is disposable.
 
 ### 3. Platform internals — leave alone
 
@@ -96,7 +96,7 @@ Examples (these are platform state, not bot work product):
 
 The operative distinction:
 - **Editing a file that already lives in one of these dirs** — OK when the task requires it. That's modification of existing state.
-- **Creating a brand-new bot-authored file and putting it there** — not the bot's output home. New keepsake files go to `/bot-workspace/`. New disposable files go to `/tmp/`.
+- **Creating a brand-new bot-authored file and putting it there** — not the bot's output home. New keepsake files go to `/home/zombie/bot-workspace/`. New disposable files go to `/tmp/`.
 
 ---
 
@@ -118,19 +118,19 @@ Skills are the one case where a keepsake file legitimately lives both in the ski
 - Installing a skill into `~/.hermes/skills/` makes it available to all agents that load from the default skills location.
 - This is the "default skills" store — put a skill here when you want it seen by more than just one profile.
 
-### Backend skill code — `/bot-skillcode/`
+### Backend skill code — `/home/zombie/bot-skillcode/`
 
 - Some skills are backed by python scripts, repos, or other code that we actually **run** rather than just load as documentation. Examples: `agent-backup-skill/` (backup.py), `agent-backup-tool/` (restore.py).
 - These are not loadable Hermes skills in the platform sense — they are standalone repos/repos we invoke directly via `python3 <script>`.
-- They live in `/bot-skillcode/` as the dedicated home for this kind of backend code. Each gets its own subfolder (e.g. `/bot-skillcode/agent-backup-skill/`), preserving the git repo intact.
-- `/bot-skillcode/` is a sibling of `/bot-workspace/` and `/bot-database/`, not inside either. It is part of the "keep" zone — these are things we built and use, and they should survive a reboot/restore.
+- They live in `/home/zombie/bot-skillcode/` as the dedicated home for this kind of backend code. Each gets its own subfolder (e.g. `/bot-skillcode/agent-backup-skill/`), preserving the git repo intact.
+- `/home/zombie/bot-skillcode/` is a sibling of `/home/zombie/bot-workspace/` and `/home/zombie/bot-database/`, not inside either. It is part of the "keep" zone — these are things we built and use, and they should survive a reboot/restore.
 - If a backend repo is updated, update the repo in place (it's the real working copy, not an inventory copy).
 
 ### Skill build + install workflow
 
 This is the workflow for bot-authored loadable Hermes skills (the kind that live in `~/.hermes/profiles/<profile>/skills/` or `~/.hermes/skills/`):
 
-1. **Build the skill in a workspace area.** For backend repos (python scripts, etc.) that's `/bot-skillcode/<skill-name>/`. For pure-doc skills, build in a workspace folder under `/bot-workspace/` or `/tmp/` while working — wherever is convenient during development.
+1. **Build the skill in a workspace area.** For backend repos (python scripts, etc.) that's `/bot-skillcode/<skill-name>/`. For pure-doc skills, build in a workspace folder under `/home/zombie/bot-workspace/` or `/tmp/` while working — wherever is convenient during development.
 
 2. **Verify it works.** Test the skill or script from where it's built before pushing anything.
 
@@ -143,7 +143,7 @@ This is the workflow for bot-authored loadable Hermes skills (the kind that live
 
 5. **Remove the original work files once the skill is fully installed and committed to GH.** Once the GH repo is pushed AND the skill is installed in the skills dir the user wanted, clean up the build workspace. There is no separate "keepsake copy" to maintain — GH is the keepsake for the skill source, and the skills dir copy is what makes it usable.
 
-Do NOT keep a flat `.md` keepsake copy in `/bot-workspace/skills/` as a separate inventory artifact. That is wasted space — the GH repo is the durable record, and the installed skills-dir copy is what's actually used. If a build-area copy still exists in `/bot-workspace/` after install, remove it (unless the user wants to keep it for some reason).
+Do NOT keep a flat `.md` keepsake copy in `/bot-workspace/skills/` as a separate inventory artifact. That is wasted space — the GH repo is the durable record, and the installed skills-dir copy is what's actually used. If a build-area copy still exists in `/home/zombie/bot-workspace/` after install, remove it (unless the user wants to keep it for some reason).
 
 **Note on the existing storage-guidelines.md in `/bot-workspace/skills/`:** that file is a leftover from the old "keep a flat .md keepsake copy" pattern. It is wasted space under the new workflow. It should be removed — the GH repo (`Zombie-W33D/storage-guidelines`) is the durable record, and the skills-dir copies are the live usable copies. Do not re-create keepsake `.md` copies in `/bot-workspace/skills/` for any skill; clean them out instead.
 
@@ -164,15 +164,15 @@ For each file/directory the bot is about to create, ask in order:
    - No → go to 2.
 
 2. **Is this a keepsake — something the user asked for, or that has value and should survive?**
-   - Yes → `/bot-workspace/` (in an appropriate subfolder, not loose at the top unless it's a single standalone file like `USER.md`).
-   - No / unsure → treat it as a keepsake and put it in `/bot-workspace/`. When in doubt, keep.
+   - Yes → `/home/zombie/bot-workspace/` (in an appropriate subfolder, not loose at the top unless it's a single standalone file like `USER.md`).
+   - No / unsure → treat it as a keepsake and put it in `/home/zombie/bot-workspace/`. When in doubt, keep.
 
 3. **Is this the bot's own framework/config change, not a new file?**
    - If the bot is editing a config that already lives in a platform dir, do the edit in place. That's modification, not storage.
-   - If the bot is creating a new config it authored for the user and the user wants to keep, that goes in `/bot-workspace/` (or wherever the user says).
+   - If the bot is creating a new config it authored for the user and the user wants to keep, that goes in `/home/zombie/bot-workspace/` (or wherever the user says).
 
-4. **Am I about to drop a file into `/home/zombie/` someplace that isn't `/bot-workspace/`, `/bot-database/`, `/bot-skillcode/`, or `/tmp/`?**
-   - If yes, stop and move it to the right zone. The only bot-authored files in `/home/zombie/` should be either in `/bot-workspace/`, `/bot-database/`, `/bot-skillcode/`, or `/tmp/`. Everything else is platform state or existing user files the bot is reading or editing in place.
+4. **Am I about to drop a file into `/home/zombie/` someplace that isn't `/home/zombie/bot-workspace/`, `/home/zombie/bot-database/`, `/home/zombie/bot-skillcode/`, or `/tmp/`?**
+   - If yes, stop and move it to the right zone. The only bot-authored files in `/home/zombie/` should be either in `/home/zombie/bot-workspace/`, `/home/zombie/bot-database/`, `/home/zombie/bot-skillcode/`, or `/tmp/`. Everything else is platform state or existing user files the bot is reading or editing in place.
 
 ---
 
@@ -187,9 +187,9 @@ When a user says "move," do a move. When a user says "copy," do a copy. Don't as
 
 ## Cross-session continuity
 
-- Because `/bot-workspace/` is the keepsake home, it's also the thing to back up if the user ever wants to preserve bot work across a reformat or restore.
-- Because `/tmp/` is ephemeral, the bot should never assume anything in `/tmp/` survives a reboot. If something in `/tmp/` needs to survive, copy it to `/bot-workspace/` before reboot.
-- If a bot makes a temp file and later needs it again in a later session, it's gone after reboot. Recreate it or find the real keepsake in `/bot-workspace/`.
+- Because `/home/zombie/bot-workspace/` is the keepsake home, it's also the thing to back up if the user ever wants to preserve bot work across a reformat or restore.
+- Because `/tmp/` is ephemeral, the bot should never assume anything in `/tmp/` survives a reboot. If something in `/tmp/` needs to survive, copy it to `/home/zombie/bot-workspace/` before reboot.
+- If a bot makes a temp file and later needs it again in a later session, it's gone after reboot. Recreate it or find the real keepsake in `/home/zombie/bot-workspace/`.
 
 ---
 
@@ -197,9 +197,9 @@ When a user says "move," do a move. When a user says "copy," do a copy. Don't as
 
 The machine got reformatted because work from multiple agents got scattered into places that weren't cleanable without manual hunting. This guideline exists so that from this point on, bot work has one of four keep zones:
 
-- `/bot-workspace/` — general bot-authored keepsakes (output files, configs, project files, notes, plans, albums, generated artifacts)
-- `/bot-database/` — user database project (sibling of bot-workspace, NOT inside it)
-- `/bot-skillcode/` — backend code for skill-driven tools we actually run (python scripts, repos; e.g. agent-backup-skill, agent-backup-tool)
+- `/home/zombie/bot-workspace/` — general bot-authored keepsakes (output files, configs, project files, notes, plans, albums, generated artifacts)
+- `/home/zombie/bot-database/` — user database project (sibling of bot-workspace, NOT inside it)
+- `/home/zombie/bot-skillcode/` — backend code for skill-driven tools we actually run (python scripts, repos; e.g. agent-backup-skill, agent-backup-tool)
 - `/tmp/` — throwaway
 
 and so that nothing the bot creates ends up in the general `/home/zombie/` tree outside those zones. That makes cleanup simple, keeps backups focused, and means a future reformat doesn't require the user to go hunting for what the bot left behind.
@@ -217,4 +217,4 @@ If this skill is edited, update the profile-local copy and the shared default co
 
 ---
 
-*This skill lives in the Hermes skills dirs (`~/.hermes/profiles/aria/skills/` for this profile and `~/.hermes/skills/` for the shared default) because that's where the platform loads skills from. The rule it describes is about bot **output** — not about where the skill file itself lives. The bot workspace is for work product; the skills dirs are the platform's skill-loading mechanism. Backend code repos for skills we run live in `/bot-skillcode/` instead. There are no flat .md keepsake copies in `/bot-workspace/skills/` — GH is the durable record for skill source, and the skills-dir copies are the live usable copies.*
+*This skill lives in the Hermes skills dirs (`~/.hermes/profiles/aria/skills/` for this profile and `~/.hermes/skills/` for the shared default) because that's where the platform loads skills from. The rule it describes is about bot **output** — not about where the skill file itself lives. The bot workspace is for work product; the skills dirs are the platform's skill-loading mechanism. Backend code repos for skills we run live in `/home/zombie/bot-skillcode/` instead. There are no flat .md keepsake copies in `/bot-workspace/skills/` — GH is the durable record for skill source, and the skills-dir copies are the live usable copies.*

@@ -122,7 +122,7 @@ Skills are the one case where a keepsake file legitimately lives both in the ski
 
 - Some skills are backed by python scripts, repos, or other code that we actually **run** rather than just load as documentation. Examples: `agent-backup-skill/` (backup.py), `agent-backup-tool/` (restore.py).
 - These are not loadable Hermes skills in the platform sense — they are standalone repos/repos we invoke directly via `python3 <script>`.
-- They live in `/home/zombie/bot-skillcode/` as the dedicated home for this kind of backend code. Each gets its own subfolder (e.g. `/bot-skillcode/agent-backup-skill/`), preserving the git repo intact.
+- They live in `/home/zombie/bot-skillcode/` as the dedicated home for this kind of backend code. Each gets its own subfolder (e.g. `/home/zombie/bot-skillcode/agent-backup-skill/`), preserving the git repo intact.
 - `/home/zombie/bot-skillcode/` is a sibling of `/home/zombie/bot-workspace/` and `/home/zombie/bot-database/`, not inside either. It is part of the "keep" zone — these are things we built and use, and they should survive a reboot/restore.
 - If a backend repo is updated, update the repo in place (it's the real working copy, not an inventory copy).
 
@@ -130,7 +130,7 @@ Skills are the one case where a keepsake file legitimately lives both in the ski
 
 This is the workflow for bot-authored loadable Hermes skills (the kind that live in `~/.hermes/profiles/<profile>/skills/` or `~/.hermes/skills/`):
 
-1. **Build the skill in a workspace area.** For backend repos (python scripts, etc.) that's `/bot-skillcode/<skill-name>/`. For pure-doc skills, build in a workspace folder under `/home/zombie/bot-workspace/` or `/tmp/` while working — wherever is convenient during development.
+1. **Build the skill in a workspace area.** For backend repos (python scripts, etc.) that's `/home/zombie/bot-skillcode/<skill-name>/`. For pure-doc skills, build in a workspace folder under `/home/zombie/bot-workspace/` or `/tmp/` while working — wherever is convenient during development.
 
 2. **Verify it works.** Test the skill or script from where it's built before pushing anything.
 
@@ -143,15 +143,15 @@ This is the workflow for bot-authored loadable Hermes skills (the kind that live
 
 5. **Remove the original work files once the skill is fully installed and committed to GH.** Once the GH repo is pushed AND the skill is installed in the skills dir the user wanted, clean up the build workspace. There is no separate "keepsake copy" to maintain — GH is the keepsake for the skill source, and the skills dir copy is what makes it usable.
 
-Do NOT keep a flat `.md` keepsake copy in `/bot-workspace/skills/` as a separate inventory artifact. That is wasted space — the GH repo is the durable record, and the installed skills-dir copy is what's actually used. If a build-area copy still exists in `/home/zombie/bot-workspace/` after install, remove it (unless the user wants to keep it for some reason).
+Do NOT keep a flat `.md` keepsake copy in `/home/zombie/bot-workspace/skills/` as a separate inventory artifact. That is wasted space — the GH repo is the durable record, and the installed skills-dir copy is what's actually used. If a build-area copy still exists in `/home/zombie/bot-workspace/` after install, remove it (unless the user wants to keep it for some reason).
 
-**Note on the existing storage-guidelines.md in `/bot-workspace/skills/`:** that file is a leftover from the old "keep a flat .md keepsake copy" pattern. It is wasted space under the new workflow. It should be removed — the GH repo (`Zombie-W33D/storage-guidelines`) is the durable record, and the skills-dir copies are the live usable copies. Do not re-create keepsake `.md` copies in `/bot-workspace/skills/` for any skill; clean them out instead.
+**Note on the existing storage-guidelines.md in `/home/zombie/bot-workspace/skills/`:** that file is a leftover from the old "keep a flat .md keepsake copy" pattern. It is wasted space under the new workflow. It should be removed — the GH repo (`Zombie-W33D/storage-guidelines`) is the durable record, and the skills-dir copies are the live usable copies. Do not re-create keepsake `.md` copies in `/home/zombie/bot-workspace/skills/` for any skill; clean them out instead.
 
 ### Why no keepsake copies
 
 - The GH repo is the durable storage for the skill source. It survives a reformat. That's the keepsake.
 - The skills-dir copy is the live, usable copy that Hermes loads. That's the thing that matters day-to-day.
-- A third copy in `/bot-workspace/skills/` as an "inventory" is redundant — it's an older pattern that's no longer needed now that each skill has its own GH repo as the durable record.
+- A third copy in `/home/zombie/bot-workspace/skills/` as an "inventory" is redundant — it's an older pattern that's no longer needed now that each skill has its own GH repo as the durable record.
 
 ---
 
@@ -217,4 +217,4 @@ If this skill is edited, update the profile-local copy and the shared default co
 
 ---
 
-*This skill lives in the Hermes skills dirs (`~/.hermes/profiles/aria/skills/` for this profile and `~/.hermes/skills/` for the shared default) because that's where the platform loads skills from. The rule it describes is about bot **output** — not about where the skill file itself lives. The bot workspace is for work product; the skills dirs are the platform's skill-loading mechanism. Backend code repos for skills we run live in `/home/zombie/bot-skillcode/` instead. There are no flat .md keepsake copies in `/bot-workspace/skills/` — GH is the durable record for skill source, and the skills-dir copies are the live usable copies.*
+*This skill lives in the Hermes skills dirs (`~/.hermes/profiles/aria/skills/` for this profile and `~/.hermes/skills/` for the shared default) because that's where the platform loads skills from. The rule it describes is about bot **output** — not about where the skill file itself lives. The bot workspace is for work product; the skills dirs are the platform's skill-loading mechanism. Backend code repos for skills we run live in `/home/zombie/bot-skillcode/` instead. There are no flat .md keepsake copies in `/home/zombie/bot-workspace/skills/` — GH is the durable record for skill source, and the skills-dir copies are the live usable copies.*
